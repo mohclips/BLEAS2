@@ -8,3 +8,5 @@ __pycache__/
 .secrets.baseline
 sudopass
 bleas.service
+old/
+scanner

@@ -1,11 +1,14 @@
-# BLEAS
+# BLEAS v2
 
 "ah, bless" - when used patronisingly, meaning someone tried to do the right thing but didn't.
+
+written in go.
 
 ## Bluetooth Low Energy Advertisement Sniffer
 
 Based on the great work on the following projects:
 
+- [sausheong](https://towardsdatascience.com/spelunking-bluetooth-le-with-go-c2cff65a7aca)spelunking for bluetooth (in go)
 - [BLEAK](https://github.com/hbldh/bleak) Bluetooth Low Energy platform Agnostic Klient for Python
 - [furiousMAC](https://github.com/furiousMAC/continuity) Apple Continuity Protocol Reverse Engineering and Dissector
 - [popets 2020-0003](https://content.sciendo.com/view/journals/popets/2020/1/article-p26.xml?language=en) Discontinued Privacy: Personal Data Leaks in
@@ -14,7 +17,7 @@ Protocols
 
 ## ElasticSearch
 
-All data is saved into an ElasticSearch cluster, this enables better search and visualisation of data
+TODO: All data is saved into an ElasticSearch cluster, this enables better search and visualisation of data
 
 ## Privacy
 
