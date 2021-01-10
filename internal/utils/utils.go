@@ -134,3 +134,14 @@ func CheckBtUsbPower() {
 }
 
 // #######################################################################################
+
+// FormatHex - reformat string for proper display of hex
+func FormatHex(instr string) (outstr string) {
+	outstr = ""
+	for i := range instr {
+		if i%2 == 0 {
+			outstr += instr[i:i+2] + " "
+		}
+	}
+	return
+}
