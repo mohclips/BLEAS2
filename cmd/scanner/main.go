@@ -8,16 +8,20 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"log"
+	"os"
 	"time"
 
+	// BLE
 	"github.com/pkg/errors"
 	"github.com/sausheong/ble"
 	"github.com/sausheong/ble/examples/lib/dev"
 
-	// "github.com/gernest/wow"
+	// Logging
+	nested "github.com/antonfisher/nested-logrus-formatter"
+	"github.com/sirupsen/logrus"
 
-	"github.com/mohclips/BLEAS2/internal/manufacturers"
+	// My stuff
+	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 	"github.com/mohclips/BLEAS2/internal/utils"
 )
 
@@ -27,11 +31,28 @@ var (
 	dup    = flag.Bool("dup", true, "allow duplicate reported")
 )
 
+var loglevel = logrus.TraceLevel
+
 var isRunning bool = false
 
 const debug bool = false
 
+var log = logrus.New()
+
 func main() {
+
+	log.SetFormatter(&nested.Formatter{
+		HideKeys: false,
+		//FieldsOrder: []string{"component", "category"},
+		TimestampFormat: "2006-01-02 15:04:06",
+		ShowFullLevel:   true,
+	})
+
+	// log to stdout not stderr
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	log.SetLevel(loglevel)
 
 	// needed to access Bluetooth and set USB power
 	if !utils.RunningAsRoot() {
@@ -43,7 +64,7 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Printf("Running...\n")
+	log.Info("Running...\n")
 
 	d, err := dev.NewDevice(*device)
 	if err != nil {
@@ -91,63 +112,53 @@ func advHandler(a ble.Advertisement) {
 	//spew.Printf("\n\nSPEW %#v", a)
 	//fmt.Printf("\n\nFMT %#v", a)
 
-	fmt.Printf("%s ", time.Now().Format(time.RFC3339))
+	log.WithFields(logrus.Fields{
+		"time": time.Now().Format(time.RFC3339),
+		"addr": a.Addr(),
+		"rssi": a.RSSI(),
+	}).Info()
 
-	if a.Connectable() {
-		fmt.Printf("[%s] C %3d:", a.Addr(), a.RSSI())
-	} else {
-		fmt.Printf("[%s] N %3d:", a.Addr(), a.RSSI())
-	}
-	comma := ""
 	if len(a.LocalName()) > 0 {
-		fmt.Printf(" Name: %s", a.LocalName())
-		comma = ","
+		log.WithFields(logrus.Fields{
+			"Name": a.LocalName(),
+		}).Debug()
 	}
 	if len(a.Services()) > 0 {
-		fmt.Printf("%s Svcs: %v", comma, a.Services())
-		comma = ","
+		log.WithFields(logrus.Fields{
+			"Services": a.Services(),
+		}).Debug()
 	}
 
 	if len(a.ManufacturerData()) > 0 {
-		fmt.Printf("%s MD: %X", comma, a.ManufacturerData())
+		mID := mf.GetID(a.ManufacturerData())
+		mName := mf.GetName(mID)
 
-		//binary.LittleEndian.Uint16(b[0:])
-		//m := binary.LittleEndian.Uint16((a.ManufacturerData())[0:2])
+		log.WithFields(logrus.Fields{
+			"ManufacturerID":   fmt.Sprintf("0x%04x", mID),
+			"Manufacturer":     mName,
+			"ManufacturerData": a.ManufacturerData(),
+		}).Debug()
 
-		mID := manufacturers.GetID(a.ManufacturerData())
-		mName := manufacturers.GetName(mID)
-
-		fmt.Printf(" Manufacturer Id: 0x%04x %s\n", mID, mName)
 	}
 
-	fmt.Printf("\n%s RAW: %s", comma, formatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())))
+	log.WithFields(logrus.Fields{
+		"RAW": utils.FormatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())),
+		"SR":  utils.FormatHex(hex.EncodeToString(a.ScanResponseRaw())),
+	}).Trace()
 
-	fmt.Printf("\n%s SR: %s", comma, formatHex(hex.EncodeToString(a.ScanResponseRaw())))
-
-	fmt.Printf("\n\n")
 }
 
 func chkErr(err error) {
 	switch errors.Cause(err) {
 	case nil:
 	case context.DeadlineExceeded:
-		fmt.Printf("%s ", time.Now().Format(time.RFC3339))
-		fmt.Printf("---\n") // no data seen?
+		//log.Info("%s ---\n", time.Now().Format(time.RFC3339))
+		//fmt.Printf("---\n") // no data seen?
+		log.Info("---")
 	case context.Canceled:
-		fmt.Printf("cancelled\n")
+		log.Warn("Cancelled\n")
 		isRunning = false
 	default:
 		log.Fatalf(err.Error())
 	}
-}
-
-// reformat string for proper display of hex
-func formatHex(instr string) (outstr string) {
-	outstr = ""
-	for i := range instr {
-		if i%2 == 0 {
-			outstr += instr[i:i+2] + " "
-		}
-	}
-	return
 }
