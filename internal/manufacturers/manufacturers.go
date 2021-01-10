@@ -8,11 +8,15 @@ import (
 	"encoding/binary"
 )
 
-func getID(manufacturerData []byte) uint16 {
+// GetID get id from data
+func GetID(manufacturerData []byte) uint16 {
+
 	id := binary.LittleEndian.Uint16((manufacturerData)[0:2])
 	return id
 }
-func getName(id uint16) string {
+
+// GetName get name from id
+func GetName(id uint16) string {
 	mName := "unknown"
 	if n, ok := MANUFACTURERS[id]; ok {
 		mName = n
