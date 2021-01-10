@@ -3,3 +3,4 @@ old/
 .old/
 .secrets.baseline
 main
+go.sum
