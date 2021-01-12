@@ -22,6 +22,7 @@ import (
 
 	// My stuff
 	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
+	apple "github.com/mohclips/BLEAS2/internal/manufacturers/apple"
 	"github.com/mohclips/BLEAS2/internal/utils"
 )
 
@@ -29,6 +30,8 @@ var (
 	device = flag.String("device", "default", "implementation of ble")
 	du     = flag.Duration("du", 5*time.Second, "scanning duration")
 	dup    = flag.Bool("dup", true, "allow duplicate reported")
+	id152  = flag.Bool("id152", false, "show ID152 devices")
+	nhs    = flag.Bool("nhs", false, "show NHS advertisements")
 )
 
 var loglevel = logrus.TraceLevel
@@ -38,6 +41,25 @@ var isRunning bool = false
 const debug bool = false
 
 var log = logrus.New()
+
+// ParsedManufacturerData - The parsed data we are after
+type ParsedManufacturerData struct {
+	ID   int
+	Name string
+	// we add more here once its Marshalled as json
+}
+
+// Device - represents a BLE device, with our parsed data tacked on
+type Device struct {
+	Address          string    `json:"address"`
+	Detected         time.Time `json:"detected"`
+	Since            string    `json:"since"`
+	Name             string    `json:"name"`
+	RSSI             int       `json:"rssi"`
+	Advertisement    string    `json:"advertisement"`
+	ScanResponse     string    `json:"scanresponse"`
+	ManufacturerData ParsedManufacturerData
+}
 
 func main() {
 
@@ -59,12 +81,12 @@ func main() {
 		log.Fatal("This program must be run as root! (sudo)")
 	}
 
-	// make sure USB power is 'on' not 'auto' otherwise we have s suspend issue
+	// make sure USB power is 'on' not 'auto' otherwise we have a suspend issue
 	utils.CheckBtUsbPower()
 
 	flag.Parse()
 
-	log.Info("Running...\n")
+	log.Info("Running...")
 
 	d, err := dev.NewDevice(*device)
 	if err != nil {
@@ -87,30 +109,43 @@ func main() {
 // #######################################################################################
 
 func advHandler(a ble.Advertisement) {
+	/*
+	   	t := reflect.TypeOf(struct{ ble.Advertisement }{})
+	   	for i := 0; i < t.NumMethod(); i++ {
+	   		fmt.Println(t.Method(i).Name)
+	   	}
+	   Addr
+	   Connectable
+	   LEAdvertisingReportRaw
+	   LocalName
+	   ManufacturerData
+	   OverflowService
+	   RSSI
+	   ScanResponseRaw
+	   ServiceData
+	   Services
+	   SolicitedService
+	   TxPowerLevel
+	*/
 
+	// very chatty device at home
+	if a.LocalName() == "ID152" && *id152 == false {
+		return
+	}
+
+	// only display pkts with MD in them
 	if (len(a.LocalName()) > 0) &&
 		(a.LocalName() == "ID152") &&
 		(len(a.ManufacturerData()) == 0) {
 		return
 	}
 
+	// do not display NHS app
 	if len(a.Services()) > 0 {
-		if a.Services()[0].String() == "fd6f" {
+		if a.Services()[0].String() == "fd6f" && *nhs == false {
 			return
 		}
 	}
-
-	//debug
-	// if len(a.Services()) > 0 {
-	// 	if a.Services()[0].String() != "fd6f" {
-	// 		fmt.Printf("\n\n%s", spew.Sdump(a))
-	// 	}
-	// }
-	// if len(a.ManufacturerData()) > 0 {
-	// 	spew.Dump(a)
-	// }
-	//spew.Printf("\n\nSPEW %#v", a)
-	//fmt.Printf("\n\nFMT %#v", a)
 
 	log.WithFields(logrus.Fields{
 		"time": time.Now().Format(time.RFC3339),
@@ -139,12 +174,23 @@ func advHandler(a ble.Advertisement) {
 			"ManufacturerData": a.ManufacturerData(),
 		}).Debug()
 
+		if mName == "Apple, Inc." {
+			apple.ParseMF(a.ManufacturerData())
+
+		}
 	}
 
 	log.WithFields(logrus.Fields{
-		"RAW": utils.FormatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())),
-		"SR":  utils.FormatHex(hex.EncodeToString(a.ScanResponseRaw())),
+		//"test": a.EventType(),
+		"RAW":              utils.FormatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())),
+		"SR":               utils.FormatHex(hex.EncodeToString(a.ScanResponseRaw())),
+		"TxPowerLevel":     a.TxPowerLevel,
+		"OverflowService":  a.OverflowService,
+		"SolicitedService": a.SolicitedService,
+		"Connectable":      a.Connectable,
 	}).Trace()
+
+	//log.Error("%s",utils.FormatHex(hex.EncodeToString(   LEAdvertisingReport())))
 
 }
 
