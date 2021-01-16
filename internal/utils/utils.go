@@ -145,3 +145,17 @@ func FormatHex(instr string) (outstr string) {
 	}
 	return
 }
+
+// #######################################################################################
+
+// BitmaskToNames - return an array of strings from a map dependant on bitmask input
+func BitmaskToNames(k int, m map[int]string) []string {
+	var result []string
+	for i := 0; i < len(m); i++ {
+		pos := k & (1 << i)
+		if pos != 0 {
+			result = append(result, m[pos])
+		}
+	}
+	return result
+}
