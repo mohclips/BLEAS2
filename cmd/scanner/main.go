@@ -174,9 +174,10 @@ func advHandler(a ble.Advertisement) {
 			"ManufacturerData": a.ManufacturerData(),
 		}).Debug()
 
+		// do each known Manufacturer
 		if mName == "Apple, Inc." {
-			apple.ParseMF(a.ManufacturerData())
-
+			ret := apple.ParseMF(a.ManufacturerData())
+			log.Debug(ret)
 		}
 	}
 
@@ -192,6 +193,7 @@ func advHandler(a ble.Advertisement) {
 
 	//log.Error("%s",utils.FormatHex(hex.EncodeToString(   LEAdvertisingReport())))
 
+	//NOTE: when saving to Elastic, make sure you save the RAW packet as well
 }
 
 func chkErr(err error) {

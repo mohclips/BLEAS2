@@ -4,3 +4,4 @@ old/
 .secrets.baseline
 main
 go.sum
+export.sh
