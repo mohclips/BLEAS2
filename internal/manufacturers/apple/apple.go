@@ -65,9 +65,7 @@ func ParseMF(mmfData []byte) string {
 		jApple = processAirpods(data)
 
 	default:
-		log.Printf("WARNING: No parser for action 0x%02x", action)
-		log.Printf("Apple: %+v", data)
-		//TODO: save raw packet for later R&D
+		log.Printf("WARNING: No parser for action Apple: (0x%02x) %+v", action, data)
 
 		type Apple struct {
 			UnknownPacket `json:"unknown"`
