@@ -3,12 +3,15 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
+
+	//"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	log "github.com/mohclips/BLEAS2/internal/logging"
 )
 
 // #######################################################################################
@@ -20,7 +23,7 @@ func RunningAsRoot() bool {
 	output, err := cmd.Output()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("%s", err)
 	}
 
 	// output has trailing \n
@@ -32,7 +35,7 @@ func RunningAsRoot() bool {
 	i, err := strconv.Atoi(string(output[:len(output)-1]))
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("%s", err)
 	}
 
 	if i != 0 {
@@ -143,6 +146,38 @@ func FormatHex(instr string) (outstr string) {
 			outstr += instr[i:i+2] + " "
 		}
 	}
+	// last := len(outstr) - 1
+	// outstr = outstr[:last]
+	return
+}
+
+// FormatHexComma - reformat string for proper display of hex
+func FormatHexComma(instr string) (outstr string) {
+	outstr = ""
+	for i := range instr {
+		if i%2 == 0 {
+
+			hex := instr[i : i+2]
+			outstr += hex + ", "
+		}
+	}
+	last := len(outstr) - 2
+	outstr = outstr[:last]
+	return
+}
+
+// FormatDecComma - reformat string for proper display of dec
+func FormatDecComma(instr string) (outstr string) {
+	outstr = ""
+	for i := range instr {
+		if i%2 == 0 {
+
+			value, _ := strconv.ParseInt(instr[i:i+2], 16, 64)
+			outstr += fmt.Sprintf("%d", value) + ", "
+		}
+	}
+	last := len(outstr) - 2
+	outstr = outstr[:last]
 	return
 }
 

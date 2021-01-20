@@ -1,0 +1,22 @@
+# default BLE device
+device: default
+# duration of scan
+duration: 5s
+# allow recording fof duplicate events
+allow_duplicates: yes
+# allow ID152 events
+allow_id152: yes
+# allow NHS Covid19 app events
+allow_nhs: no
+# record (stdout) no events seen in scan duration
+log_blanks: no
+
+elastic:
+# elastic stack destination urls
+  servers:
+    - http://192.168.0.12:9200
+
+  api_key_id:
+  api_key_secret:
+
+  index: bluetooth-alias

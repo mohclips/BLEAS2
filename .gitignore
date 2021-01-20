@@ -5,3 +5,6 @@ old/
 main
 go.sum
 export.sh
+linecounter.json
+linecounter.txt
+cmd/scanner/config.yml
