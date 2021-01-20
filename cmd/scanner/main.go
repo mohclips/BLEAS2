@@ -48,8 +48,6 @@ var isRunning bool = false
 
 const debug bool = false
 
-//var elasticURLs = []string{}
-
 // Config struct for webapp config
 type Config struct {
 	// Host is the local machine IP Address to bind the HTTP Server to
@@ -195,31 +193,14 @@ func advHandler(a ble.Advertisement) {
 		}
 	}
 
-	// log.WithFields(logrus.Fields{
-	// 	"time": time.Now().Format(time.RFC3339),
-	// 	"addr": a.Addr(),
-	// 	"rssi": a.RSSI(),
-	// }).Info()
+	// log basics to console
 	log.Info("%s - %d", a.Addr(), a.RSSI())
 
 	if len(a.LocalName()) > 0 {
-		// log.WithFields(logrus.Fields{
-		// 	"Name": a.LocalName(),
-		// }).Debug()
 		log.Debug("%s", a.LocalName())
 	}
 
 	// Trace level debug
-	// log.WithFields(logrus.Fields{
-	// 	//"test": a.EventType(),
-	// 	"RAW":              utils.FormatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())),
-	// 	"SR":               utils.FormatHex(hex.EncodeToString(a.ScanResponseRaw())),
-	// 	"TxPowerLevel":     a.TxPowerLevel,
-	// 	"OverflowService":  a.OverflowService,
-	// 	"SolicitedService": a.SolicitedService,
-	// 	"Connectable":      a.Connectable,
-	// }).Trace()
-
 	log.Trace("RAW: %s SR:%s TxPowerLevel:%d OverflowService:%s SolicitedService:%s Connectable:%T",
 		utils.FormatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())),
 		utils.FormatHex(hex.EncodeToString(a.ScanResponseRaw())),
@@ -234,9 +215,6 @@ func advHandler(a ble.Advertisement) {
 	//
 	//TODO: parse services
 	if len(a.Services()) > 0 {
-		// log.WithFields(logrus.Fields{
-		// 	"Services": a.Services(),
-		// }).Debug()
 		log.Debug("Services: %s", a.Services())
 	}
 
@@ -259,22 +237,14 @@ func advHandler(a ble.Advertisement) {
 		if mName == "Apple, Inc." {
 			parsed = apple.ParseMF(a.ManufacturerData())
 			parsedOk = true
-
-			//parsed = fmt.Sprintf("{ %q: %s }", "apple", jparsed)
 		}
 
 		// if not parsed then Debug
 		if !parsedOk {
-			// log.WithFields(logrus.Fields{
-			// 	"ManufacturerID":   fmt.Sprintf("0x%04x", mID),
-			// 	"Manufacturer":     mName,
-			// 	"ManufacturerData": a.ManufacturerData(),
-			// }).Debug("Data not parsed")
-
 			log.Debug("ManufacturerID: %s Manufacturer: %s ManufacturerData: %s",
 				fmt.Sprintf("0x%04x", mID),
 				mName,
-				a.ManufacturerData(),
+				utils.FormatDecComma(hex.EncodeToString(a.ManufacturerData())),
 			)
 
 			// this has issues and i dont like it.
@@ -282,8 +252,6 @@ func advHandler(a ble.Advertisement) {
 		}
 
 	}
-
-	//fmt.Printf(">>>%s\n", parsed)
 
 	// ParsedManufacturerData - The parsed data we are after
 	type ParsedManufacturerData struct {
@@ -323,13 +291,11 @@ func advHandler(a ble.Advertisement) {
 	}
 
 	//fmt.Printf("DEVICE: %+v\n", device)
-
 	//spew.Dump(device)
 
 	//
 	// append "parsed" to struct containing BLE data
 	//
-
 	// convert to json
 	var dpkt []byte
 	dpkt, err = json.Marshal(device)
@@ -348,7 +314,6 @@ func advHandler(a ble.Advertisement) {
 	}
 
 	//spew.Dump(dpkt)
-
 	//fmt.Printf(">>>%s\n", rjson)
 
 	// TODO: need to work out Duplicates. need 'allowdups=600' flag
@@ -381,15 +346,15 @@ func advHandler(a ble.Advertisement) {
 			Do(esctx)
 
 		if err != nil {
-
 			// added for debug of unmatched issues
 			log.Error("ERROR ==============================================================================================")
 			log.Error("parsed: %s", parsed)
 			log.Error("rjson: %s", rjson)
-
+			// now die!
 			log.Panic("%s", err)
 		}
 
+		// log that to was saved to ES
 		log.Debug("Index: %s, Id: %s", indexResponse.Index, indexResponse.Id)
 	}
 }

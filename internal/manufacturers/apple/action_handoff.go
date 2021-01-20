@@ -3,7 +3,9 @@ package apple
 import (
 	"encoding/binary"
 	"encoding/json"
-	"log"
+
+	//"log"
+	log "github.com/mohclips/BLEAS2/internal/logging"
 )
 
 func processHandoff(data []byte) []byte {
@@ -34,7 +36,8 @@ func processHandoff(data []byte) []byte {
 	var err error
 	mpkt, err = json.Marshal(pkt)
 	if err != nil {
-		log.Println(err)
+		log.Error("%s", err)
+		mpkt = nil
 	}
 
 	return mpkt

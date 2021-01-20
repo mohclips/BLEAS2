@@ -3,7 +3,9 @@ package apple
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	//"log"
+	log "github.com/mohclips/BLEAS2/internal/logging"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +35,7 @@ func ParseMF(mmfData []byte) string {
 	}
 
 	if len(mfData) > length+2 {
-		log.Printf("WARNING: manufacturers data is greater than one action, %+v", mfData[length:])
+		log.Warn("manufacturers data is greater than one action, %+v", mfData[length:])
 		//TODO: split and run multiple times?
 	}
 
@@ -65,7 +67,7 @@ func ParseMF(mmfData []byte) string {
 		jApple = processAirpods(data)
 
 	default:
-		log.Printf("WARNING: No parser for action Apple: (0x%02x) %+v", action, data)
+		log.Warn("No parser for action Apple: (0x%02x) %+v", action, data)
 
 		type Apple struct {
 			UnknownPacket `json:"unknown"`
@@ -84,7 +86,8 @@ func ParseMF(mmfData []byte) string {
 		var err error
 		mpkt, err = json.Marshal(pkt)
 		if err != nil {
-			log.Println(err)
+			log.Error("%s", err)
+			mpkt = nil
 		}
 
 		jApple = mpkt
