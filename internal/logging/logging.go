@@ -3,7 +3,10 @@ package logging
 import (
 	// Logging
 
+	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	"github.com/sirupsen/logrus"
@@ -46,31 +49,61 @@ func Info(format string, v ...interface{}) {
 
 // Warn ...
 func Warn(format string, v ...interface{}) {
+	_, path, num, ok := runtime.Caller(1)
+	if ok {
+		file := filepath.Base(path)
+		format = fmt.Sprintf("\033[1;35m%s#%d\033[0m, %s", file, num, format)
+	}
 	log.Warnf(format, v...)
 }
 
 // Error ...
 func Error(format string, v ...interface{}) {
+	_, path, num, ok := runtime.Caller(1)
+	if ok {
+		file := filepath.Base(path)
+		format = fmt.Sprintf("\033[1;35m%s#%d\033[0m, %s", file, num, format)
+	}
 	log.Errorf(format, v...)
 }
 
 // Debug ...
 func Debug(format string, v ...interface{}) {
+	_, path, num, ok := runtime.Caller(1)
+	if ok {
+		file := filepath.Base(path)
+		format = fmt.Sprintf("\033[1;35m%s#%d\033[0m, %s", file, num, format)
+	}
 	log.Debugf(format, v...)
 }
 
 // Fatal ...
 func Fatal(format string, v ...interface{}) {
+	_, path, num, ok := runtime.Caller(1)
+	if ok {
+		file := filepath.Base(path)
+		format = fmt.Sprintf("\033[1;35m%s#%d\033[0m, %s", file, num, format)
+	}
 	log.Fatalf(format, v...)
 }
 
 // Panic ...
 func Panic(format string, v ...interface{}) {
+	_, path, num, ok := runtime.Caller(1)
+	if ok {
+		file := filepath.Base(path)
+		format = fmt.Sprintf("\033[1;35m%s#%d\033[0m, %s", file, num, format)
+	}
 	log.Panicf(format, v...)
 }
 
 // Trace ...
 func Trace(format string, v ...interface{}) {
+	_, path, num, ok := runtime.Caller(1)
+	if ok {
+		file := filepath.Base(path)
+		format = fmt.Sprintf("\033[1;35m%s#%d\033[0m, %s", file, num, format)
+	}
 	log.Tracef(format, v...)
 }
 
