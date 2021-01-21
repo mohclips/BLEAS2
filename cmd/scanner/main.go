@@ -227,7 +227,7 @@ func advHandler(a ble.Advertisement) {
 		mID = mf.GetID(a.ManufacturerData())
 		mName = mf.GetName(mID)
 
-		log.Info("Manufacturer: 0x%04x : %s", mID, mName)
+		log.Info("Manufacturer: 0x%04x : \033[1;36m%s\033[0m", mID, mName)
 		//
 		// do each known Manufacturer
 		//
