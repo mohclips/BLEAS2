@@ -121,7 +121,7 @@ func main() {
 		var err error
 		esclient, err = getESClient()
 		if err != nil {
-			fmt.Println("Error initializing : ", err)
+			log.Error("Error initializing : %s", err)
 			panic("Client fail ")
 		}
 
@@ -130,7 +130,7 @@ func main() {
 
 	d, err := dev.NewDevice(cfg.Device)
 	if err != nil {
-		log.Fatal("can't new device : %s", err)
+		log.Fatal("can't 'new' device : %s", err)
 	}
 	ble.SetDefaultDevice(d)
 
@@ -194,10 +194,10 @@ func advHandler(a ble.Advertisement) {
 	}
 
 	// log basics to console
-	log.Info("%s - %d", a.Addr(), a.RSSI())
+	log.Info("Addr:%s rssi:%d", a.Addr(), a.RSSI())
 
 	if len(a.LocalName()) > 0 {
-		log.Debug("%s", a.LocalName())
+		log.Debug("LocalName: %s", a.LocalName())
 	}
 
 	// Trace level debug
@@ -227,7 +227,7 @@ func advHandler(a ble.Advertisement) {
 		mID = mf.GetID(a.ManufacturerData())
 		mName = mf.GetName(mID)
 
-		log.Info("0x%04x : %s", mID, mName)
+		log.Info("Manufacturer: 0x%04x : %s", mID, mName)
 		//
 		// do each known Manufacturer
 		//
