@@ -154,11 +154,14 @@ func FormatHex(instr string) (outstr string) {
 // FormatHexComma - reformat string for proper display of hex
 func FormatHexComma(instr string) (outstr string) {
 	outstr = ""
+	if len(instr) == 0 {
+		return
+	}
 	for i := range instr {
 		if i%2 == 0 {
 
 			hex := instr[i : i+2]
-			outstr += hex + ", "
+			outstr += "0x" + hex + ", "
 		}
 	}
 	last := len(outstr) - 2
@@ -169,6 +172,9 @@ func FormatHexComma(instr string) (outstr string) {
 // FormatDecComma - reformat string for proper display of dec
 func FormatDecComma(instr string) (outstr string) {
 	outstr = ""
+	if len(instr) == 0 {
+		return
+	}
 	for i := range instr {
 		if i%2 == 0 {
 
