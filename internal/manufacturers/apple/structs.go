@@ -60,6 +60,7 @@ type Airpods struct {
 
 //
 var blePacketsTypes = map[int]string{
+	0:    "none",
 	0x01: "unknown 0x01",
 	0x02: "unknown 0x02",
 	0x03: "airprint", // https://github.com/furiousMAC/continuity/blob/master/messages/airprint.md
@@ -121,6 +122,7 @@ var phoneStates = map[int]string{
 }
 
 var nearbyStatusMasks = map[int]string{
+	0:    "none",
 	0x01: "AirPods are connected and the screen is on",
 	0x02: "Authentication Tag is 4 bytes",
 	0x04: "WiFi is on",
@@ -132,6 +134,7 @@ var nearbyStatusMasks = map[int]string{
 }
 
 var nearbyActionTypes = map[int]string{
+	0:    "none",
 	0x01: "Apple TV Setup",
 	0x04: "Mobile Backup",
 	0x05: "Watch Setup",
@@ -156,6 +159,7 @@ var nearbyActionTypes = map[int]string{
 }
 
 var heySiriDevices = map[uint16]string{
+	0:      "none",
 	0x0002: "iPhone",
 	0x0003: "iPad",
 	0x0009: "MacBook",
@@ -181,6 +185,7 @@ var heySiriDevices = map[uint16]string{
 // Year introduced: 2017
 
 var airpodDevices = map[uint16]string{
+	0:      "none",
 	0x0002: "iPhone",
 	0x0003: "iPad",
 	0x0009: "MacBook",
