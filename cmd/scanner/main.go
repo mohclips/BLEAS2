@@ -22,6 +22,7 @@ import (
 	// My stuff
 	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 	apple "github.com/mohclips/BLEAS2/internal/manufacturers/apple"
+	microsoft "github.com/mohclips/BLEAS2/internal/manufacturers/apple"
 	"github.com/mohclips/BLEAS2/internal/utils"
 
 	//
@@ -236,6 +237,9 @@ func advHandler(a ble.Advertisement) {
 		// list known manufacturer parsers here
 		if mName == "Apple, Inc." {
 			parsed = apple.ParseMF(a.ManufacturerData())
+			parsedOk = true
+		} else if mName == "Microsoft" {
+			parsed = microsoft.ParseMF(a.ManufacturerData())
 			parsedOk = true
 		}
 
