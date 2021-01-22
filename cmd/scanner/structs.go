@@ -12,6 +12,7 @@ type ParsedManufacturerData struct {
 type Device struct {
 	Timestamp        string                 `json:"@timestamp"`
 	Address          string                 `json:"address"`
+	AddressType      string                 `json:"address_type"`
 	Detected         string                 `json:"detected"`
 	Since            string                 `json:"since,omitempty"`
 	Name             string                 `json:"name,omitempty"`

@@ -202,9 +202,9 @@ func advHandler(a ble.Advertisement) {
 	}
 
 	// Trace level debug
-	log.Trace("RAW: %s SR:%s TxPowerLevel:%d OverflowService:%s SolicitedService:%s Connectable:%T",
-		utils.FormatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())),
-		utils.FormatHex(hex.EncodeToString(a.ScanResponseRaw())),
+	log.Trace("RAW: %s SR:%s TxPowerLevel:%d OverflowService:%s SolicitedService:%s Connectable:%t",
+		utils.FormatHexComma(hex.EncodeToString(a.LEAdvertisingReportRaw())),
+		utils.FormatHexComma(hex.EncodeToString(a.ScanResponseRaw())),
 		a.TxPowerLevel(),
 		a.OverflowService(),
 		a.SolicitedService(),
@@ -216,7 +216,11 @@ func advHandler(a ble.Advertisement) {
 	//
 	//TODO: parse services
 	if len(a.Services()) > 0 {
-		log.Debug("Services: %s", a.Services())
+		if a.Services()[0].String() == "fd6f" { // NHS - Google Exposure Notification
+			//nhs.Parse(a)
+		} else {
+			log.Debug("Services: %s", a.Services())
+		}
 	}
 
 	//
@@ -257,9 +261,17 @@ func advHandler(a ble.Advertisement) {
 
 	}
 
+	var addressType string = "unknown"
+	if a.LEAdvertisingReportRaw()[3] == 0 {
+		addressType = "public"
+	} else if a.LEAdvertisingReportRaw()[3] == 1 {
+		addressType = "random"
+	}
+
 	device := Device{
 		Timestamp:     time.Now().Format(time.RFC3339),
 		Address:       fmt.Sprintf("%s", a.Addr()),
+		AddressType:   fmt.Sprintf("%s", addressType),
 		Detected:      time.Now().Format(time.RFC3339),
 		Since:         "",
 		Name:          a.LocalName(),
