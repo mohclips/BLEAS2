@@ -21,3 +21,20 @@ type Device struct {
 	ScanResponse     string                 `json:"scanresponse,omitempty"`
 	ManufacturerData ParsedManufacturerData `json:"manufacturerdata,omitempty"`
 }
+
+// MACaddressTypes - address type
+var MACaddressTypes = map[int]string{
+	0x00: "public", // - Use the controller’s public address.
+	0x01: "random", // - Use a generated static address.
+	0x02: "RPA",    // - Use resolvable private addresses.
+	0x03: "NRPA",   // - Use non-resolvable private addresses.
+}
+
+// EventTypes - adverstiment event types
+var EventTypes = map[int]string{
+	0x00: "ADV_IND",         // - connectable and scannable undirected advertising
+	0x01: "ADV_DIRECT_IND",  // - connectable directed advertising
+	0x02: "ADV_SCAN_IND",    // - scannable undirected advertising
+	0x03: "ADV_NONCONN_IND", // - non-connectable undirected advertising
+	0x04: "SCAN_RSP",        // - scan response
+}

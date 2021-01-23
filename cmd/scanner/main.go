@@ -261,12 +261,7 @@ func advHandler(a ble.Advertisement) {
 
 	}
 
-	var addressType string = "unknown"
-	if a.LEAdvertisingReportRaw()[3] == 0 {
-		addressType = "public"
-	} else if a.LEAdvertisingReportRaw()[3] == 1 {
-		addressType = "random"
-	}
+	addressType := utils.BitmaskToNames(int(a.LEAdvertisingReportRaw()[3]), MACaddressTypes)
 
 	device := Device{
 		Timestamp:     time.Now().Format(time.RFC3339),
