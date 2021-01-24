@@ -100,7 +100,7 @@ var phoneStates = map[int]string{
 	0x0d: "User is driving a vehicle",
 	0x0e: "Phone call or Facetime",
 	0x0f: "Apple iOS 13.6 Bug",
-	0x10: "Apple iOS 13.6 Bug"
+	0x10: "Apple iOS 13.6 Bug",
 	//NOTE: removed and usurped by status flags
 	// 0x11: "Home screen",
 	// 0x13: "Off",
@@ -189,15 +189,15 @@ var airpodDevices = map[uint16]string{
 	0:      "none",
 	0x0002: "iPhone",
 	0x0003: "iPad",
-	0x0008, "Audio accessory (HomePod)"
+	0x0008: "Audio accessory (HomePod)",
 	0x0009: "MacBook",
 	0x000A: "Watch",
-	0x000C, "AppleTV",
-	0x000E, "Watch",
-	0x0220, "AirPods 1",
-    0x0320, "Powerbeats3",
-    0x0520, "BeatsX",
-    0x0620, "Beats Solo 3"
+	0x000C: "AppleTV",
+	0x000E: "Watch",
+	0x0220: "AirPods 1",
+	0x0320: "Powerbeats3",
+	0x0520: "BeatsX",
+	0x0620: "Beats Solo 3",
 	0x0e20: "AirPods Pro",
-    0x0f20, "AirPods 2",
+	0x0f20: "AirPods 2",
 }
