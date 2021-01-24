@@ -58,11 +58,11 @@ type Airpods struct {
 
 // https://github.com/hexway/apple_bleee/blob/1f8022959be660b561e6004b808dd93fa252bc90/ble_read_state.py#L387
 
-//
+//https://github.com/furiousMAC/continuity/blob/master/dissector/3.2.6/packet-bthci_cmd.c#L1120
 var blePacketsTypes = map[int]string{
 	0:    "none",
-	0x01: "unknown 0x01",
-	0x02: "unknown 0x02",
+	0x01: "unknown 0x01", //Observed on iOS
+	0x02: "iBeacon",
 	0x03: "airprint", // https://github.com/furiousMAC/continuity/blob/master/messages/airprint.md
 	0x04: "unknown 0x04",
 	0x05: "airdrop",
@@ -86,20 +86,21 @@ var blePacketsTypes = map[int]string{
 var phoneStates = map[int]string{
 	0x00: "Activity level is not known",
 	0x01: "Activity reporting is disabled",
-	0x02: "unknown 0x02",
+	0x02: "Apple iOS 13.6 Bug",
 	0x03: "User is idle",
-	0x04: "unknown 0x04",
+	0x04: "Apple iOS 13.6 Bug",
 	0x05: "Audio is playing with the screen off",
-	0x06: "unknown 0x06",
+	0x06: "Apple iOS 13.6 Bug",
 	0x07: "Screen is on",
-	0x08: "unknown 0x08",
+	0x08: "Apple iOS 13.6 Bug",
 	0x09: "Screen on and video playing",
 	0x0a: "Watch is on wrist and unlocked",
 	0x0b: "Recent user interaction",
-	0x0c: "unknown 0x0c",
+	0x0c: "Apple iOS 13.6 Bug",
 	0x0d: "User is driving a vehicle",
 	0x0e: "Phone call or Facetime",
-	0x0f: "unknown 0x0f",
+	0x0f: "Apple iOS 13.6 Bug",
+	0x10: "Apple iOS 13.6 Bug"
 	//NOTE: removed and usurped by status flags
 	// 0x11: "Home screen",
 	// 0x13: "Off",
@@ -188,8 +189,15 @@ var airpodDevices = map[uint16]string{
 	0:      "none",
 	0x0002: "iPhone",
 	0x0003: "iPad",
+	0x0008, "Audio accessory (HomePod)"
 	0x0009: "MacBook",
 	0x000A: "Watch",
+	0x000C, "AppleTV",
+	0x000E, "Watch",
+	0x0220, "AirPods 1",
+    0x0320, "Powerbeats3",
+    0x0520, "BeatsX",
+    0x0620, "Beats Solo 3"
 	0x0e20: "AirPods Pro",
-	0x0f20: "Unknown model 0x0f20", // known unknown :) - prob. AirPods Max
+    0x0f20, "AirPods 2",
 }
