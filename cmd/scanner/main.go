@@ -23,6 +23,7 @@ import (
 	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 	apple "github.com/mohclips/BLEAS2/internal/manufacturers/apple"
 	microsoft "github.com/mohclips/BLEAS2/internal/manufacturers/apple"
+	"github.com/mohclips/BLEAS2/internal/manufacturers/nhs"
 	"github.com/mohclips/BLEAS2/internal/utils"
 
 	//
@@ -211,16 +212,26 @@ func advHandler(a ble.Advertisement) {
 		a.Connectable(),
 	)
 
+	addressType := utils.BitmaskToNames(int(a.LEAdvertisingReportRaw()[3]), MACaddressTypes)
+
 	//
 	// Services data provided
 	//
-	//TODO: parse services
+	var sID string
+	var sName string
 	if len(a.Services()) > 0 {
-		if a.Services()[0].String() == "fd6f" { // NHS - Google Exposure Notification
-			//nhs.Parse(a)
-		} else {
+
+		sID = a.Services()[0].String()
+		switch sID { //FIXME: this might be wrong
+		case "fd6f": // NHS - Google Exposure Notification
+			parsed = nhs.Parse(a.LEAdvertisingReportRaw())
+			sName = "Google Exposure Notification"
+		default:
 			log.Debug("Services: %s", a.Services())
+			sName = "unparsed"
+			parsed = "{}"
 		}
+
 	}
 
 	//
@@ -261,22 +272,27 @@ func advHandler(a ble.Advertisement) {
 
 	}
 
-	addressType := utils.BitmaskToNames(int(a.LEAdvertisingReportRaw()[3]), MACaddressTypes)
-
 	device := Device{
-		Timestamp:     time.Now().Format(time.RFC3339),
-		Address:       fmt.Sprintf("%s", a.Addr()),
-		AddressType:   fmt.Sprintf("%s", addressType),
-		Detected:      time.Now().Format(time.RFC3339),
-		Since:         "",
-		Name:          a.LocalName(),
-		RSSI:          a.RSSI(),
-		Advertisement: utils.FormatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())),
-		ScanResponse:  utils.FormatHex(hex.EncodeToString(a.ScanResponseRaw())),
+		Common: CommonData{
+			Timestamp:     time.Now().Format(time.RFC3339),
+			Address:       fmt.Sprintf("%s", a.Addr()),
+			AddressType:   fmt.Sprintf("%s", addressType),
+			Detected:      time.Now().Format(time.RFC3339),
+			Since:         "",
+			Name:          a.LocalName(),
+			RSSI:          a.RSSI(),
+			Advertisement: utils.FormatHex(hex.EncodeToString(a.LEAdvertisingReportRaw())),
+			ScanResponse:  utils.FormatHex(hex.EncodeToString(a.ScanResponseRaw())),
+		},
 		ManufacturerData: ParsedManufacturerData{
 			ID:      mID,
 			Name:    mName,
-			Details: "replaced by sjson", // replaced by sjson
+			Details: "", // replaced by sjson
+		},
+		ServiceData: ParsedServiceData{
+			ID:      sID,
+			Name:    sName,
+			Details: "", // replaced by sjson
 		},
 	}
 
@@ -294,13 +310,22 @@ func advHandler(a ble.Advertisement) {
 	}
 
 	var rjson string = ""
-	if len(parsed) > 0 {
+	if mName != "" && len(parsed) > 0 {
 		// now replace the parsed data
 		rjson, _ = sjson.SetRaw(string(dpkt), "manufacturerdata.details", parsed)
 	} else {
 		//rjson = string(dpkt)
-		log.Warn("no manufacturer details present")
+		log.Trace("no manufacturer details present")
 		rjson, _ = sjson.SetRaw(string(dpkt), "manufacturerdata.details", "{}")
+	}
+
+	if sName != "" && len(parsed) > 0 {
+		// now replace the parsed data
+		rjson, _ = sjson.SetRaw(string(dpkt), "servicedata.details", parsed)
+	} else {
+		//rjson = string(dpkt)
+		log.Trace("no service details present")
+		rjson, _ = sjson.SetRaw(string(dpkt), "servicedata.details", "{}")
 	}
 
 	//spew.Dump(dpkt)

@@ -8,18 +8,32 @@ type ParsedManufacturerData struct {
 	Details string `json:"details,omitempty"`
 }
 
+// ParsedServiceData - Service data if present
+type ParsedServiceData struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	// we add more here once its Marshalled as json
+	Details string `json:"details,omitempty"`
+}
+
+// CommonData - to all advertisements
+type CommonData struct {
+	Timestamp     string `json:"@timestamp"`
+	Address       string `json:"address"`
+	AddressType   string `json:"address_type"`
+	Detected      string `json:"detected"`
+	Since         string `json:"since,omitempty"`
+	Name          string `json:"name,omitempty"`
+	RSSI          int    `json:"rssi"`
+	Advertisement string `json:"advertisement,omitempty"`
+	ScanResponse  string `json:"scanresponse,omitempty"`
+}
+
 // Device - represents a BLE device, with our parsed data tacked on
 type Device struct {
-	Timestamp        string                 `json:"@timestamp"`
-	Address          string                 `json:"address"`
-	AddressType      string                 `json:"address_type"`
-	Detected         string                 `json:"detected"`
-	Since            string                 `json:"since,omitempty"`
-	Name             string                 `json:"name,omitempty"`
-	RSSI             int                    `json:"rssi"`
-	Advertisement    string                 `json:"advertisement,omitempty"`
-	ScanResponse     string                 `json:"scanresponse,omitempty"`
+	Common           CommonData
 	ManufacturerData ParsedManufacturerData `json:"manufacturerdata,omitempty"`
+	ServiceData      ParsedServiceData      `json:"servicedata,omitempty"`
 }
 
 // MACaddressTypes - address type
