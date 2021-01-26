@@ -8,3 +8,4 @@ export.sh
 linecounter.json
 linecounter.txt
 cmd/scanner/config.yml
+sudo_pwd
