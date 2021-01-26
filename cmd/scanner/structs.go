@@ -18,7 +18,6 @@ type ParsedServiceData struct {
 
 // CommonData - to all advertisements
 type CommonData struct {
-	Timestamp     string `json:"@timestamp"`
 	Address       string `json:"address"`
 	AddressType   string `json:"address_type"`
 	Detected      string `json:"detected"`
@@ -31,6 +30,7 @@ type CommonData struct {
 
 // Device - represents a BLE device, with our parsed data tacked on
 type Device struct {
+	Timestamp        string `json:"@timestamp"`
 	Common           CommonData
 	ManufacturerData ParsedManufacturerData `json:"manufacturerdata,omitempty"`
 	ServiceData      ParsedServiceData      `json:"servicedata,omitempty"`
