@@ -153,7 +153,10 @@ func main() {
 func advHandler(a ble.Advertisement) {
 
 	// parsed - data ready for elastic
-	var parsed string
+	var (
+		sParsed string
+		mParsed string
+	)
 	// error
 	var err error
 
@@ -224,12 +227,12 @@ func advHandler(a ble.Advertisement) {
 		sID = a.Services()[0].String()
 		switch sID { //FIXME: this might be wrong
 		case "fd6f": // NHS - Google Exposure Notification
-			parsed = nhs.Parse(a.LEAdvertisingReportRaw())
+			sParsed = nhs.Parse(a.LEAdvertisingReportRaw())
 			sName = "Google Exposure Notification"
 		default:
 			log.Debug("Services: %s", a.Services())
 			sName = "unparsed"
-			parsed = "{}"
+			sParsed = "{}"
 		}
 
 	}
@@ -251,10 +254,10 @@ func advHandler(a ble.Advertisement) {
 
 		// list known manufacturer parsers here
 		if mName == "Apple, Inc." {
-			parsed = apple.ParseMF(a.ManufacturerData())
+			mParsed = apple.ParseMF(a.ManufacturerData())
 			parsedOk = true
 		} else if mName == "Microsoft" {
-			parsed = microsoft.ParseMF(a.ManufacturerData())
+			mParsed = microsoft.ParseMF(a.ManufacturerData())
 			parsedOk = true
 		}
 
@@ -267,14 +270,14 @@ func advHandler(a ble.Advertisement) {
 			)
 
 			// this has issues and i dont like it.
-			parsed = fmt.Sprintf("{ %q: [%s] }", "unparsed", utils.FormatDecComma(hex.EncodeToString(a.ManufacturerData())))
+			mParsed = fmt.Sprintf("{ %q: [%s] }", "unparsed", utils.FormatDecComma(hex.EncodeToString(a.ManufacturerData())))
 		}
 
 	}
 
 	device := Device{
+		Timestamp: time.Now().Format(time.RFC3339),
 		Common: CommonData{
-			Timestamp:     time.Now().Format(time.RFC3339),
 			Address:       fmt.Sprintf("%s", a.Addr()),
 			AddressType:   fmt.Sprintf("%s", addressType),
 			Detected:      time.Now().Format(time.RFC3339),
@@ -310,22 +313,23 @@ func advHandler(a ble.Advertisement) {
 	}
 
 	var rjson string = ""
-	if mName != "" && len(parsed) > 0 {
+	if mName != "" && len(mParsed) > 0 {
 		// now replace the parsed data
-		rjson, _ = sjson.SetRaw(string(dpkt), "manufacturerdata.details", parsed)
+		rjson, _ = sjson.SetRaw(string(dpkt), "manufacturerdata.details", mParsed)
 	} else {
 		//rjson = string(dpkt)
 		log.Trace("no manufacturer details present")
 		rjson, _ = sjson.SetRaw(string(dpkt), "manufacturerdata.details", "{}")
 	}
+	// rjson at this point is now the Device struct converted into json with manufacturer details added
 
-	if sName != "" && len(parsed) > 0 {
+	if sName != "" && len(sParsed) > 0 {
 		// now replace the parsed data
-		rjson, _ = sjson.SetRaw(string(dpkt), "servicedata.details", parsed)
+		rjson, _ = sjson.SetRaw(rjson, "servicedata.details", sParsed)
 	} else {
 		//rjson = string(dpkt)
 		log.Trace("no service details present")
-		rjson, _ = sjson.SetRaw(string(dpkt), "servicedata.details", "{}")
+		rjson, _ = sjson.SetRaw(rjson, "servicedata.details", "{}")
 	}
 
 	//spew.Dump(dpkt)
@@ -363,7 +367,8 @@ func advHandler(a ble.Advertisement) {
 		if err != nil {
 			// added for debug of unmatched issues
 			log.Error("ERROR ==============================================================================================")
-			log.Error("parsed: %s", parsed)
+			log.Error("sParsed: %s", sParsed)
+			log.Error("mParsed: %s", mParsed)
 			log.Error("rjson: %s", rjson)
 			// now die!
 			log.Panic("%s", err)
