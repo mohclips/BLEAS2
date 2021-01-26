@@ -5,11 +5,14 @@ duration: 5s
 # allow recording fof duplicate events
 allow_duplicates: yes
 # allow ID152 events
-allow_id152: yes
+allow_id152: no
 # allow NHS Covid19 app events
 allow_nhs: no
 # record (stdout) no events seen in scan duration
 log_blanks: no
+# debug level = info, warn, error, debug, trace, panic, fatal
+log_level: trace
+
 
 elastic:
 # elastic stack destination urls
