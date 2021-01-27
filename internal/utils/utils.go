@@ -59,7 +59,7 @@ func exists(name string) bool {
 }
 
 func setUsbDevPower(p string, power string) {
-	fmt.Printf("Setting %s to %q\n", p, power)
+	log.Info("Setting %s to %q\n", p, power)
 
 	data := []byte(power + "\n")
 	err := ioutil.WriteFile(p, data, 644)
