@@ -82,6 +82,25 @@ const (
 	GAP_MFG_DATA                       = 0xFF
 )
 
+var knowniBeaconUUIDs = map[string]string{
+	"e2c56db5-dffb-48d2-b060-d0f5a71096e0": "Apple Air Locate (generic uuid)",
+	"f7826da6-4fa2-4e98-8024-bc5b71e0893e": "Kontakt.io",
+	"2f234454-cf6d-4a0f-adf2-f4911ba9ffa6": "Radius Networks",
+	"b9407f30-f5f8-466e-aff9-25556b57fe6d": "Estimote",
+	"50765cb7-d9ea-4e21-99a4-fa879613a492": "Common but unknown",
+}
+
+// ###########################################################################################################
+
+func LookupiBeaconVendor(uuid string) string {
+	var v string
+	var found bool
+	if v, found = knowniBeaconUUIDs[uuid]; !found {
+		v = "unknown"
+	}
+	return v
+}
+
 // ###########################################################################################################
 
 // WalkSvcs - walk though the Advertisement Services
@@ -152,22 +171,22 @@ func doSvcAction(action int, payload *[]byte, dest *Svc) {
 		dest.ParsedPayloadS = string(*payload)
 	case 0x02:
 		//Incomplete List of 16-bit Service Class UUIDs
-		dest.ParsedPayloadS = toUUID16(payload)
+		dest.ParsedPayloadS = ToUUID16(payload)
 	case 0x03:
 		//Complete List of 16-bit Service Class UUIDs
-		dest.ParsedPayloadS = toUUID16(payload)
+		dest.ParsedPayloadS = ToUUID16(payload)
 	case 0x04:
 		//Incomplete List of 32-bit Service Class UUIDs
-		dest.ParsedPayloadS = toUUID32(payload)
+		dest.ParsedPayloadS = ToUUID32(payload)
 	case 0x05:
 		//Complete List of 32-bit Service Class UUIDs
-		dest.ParsedPayloadS = toUUID32(payload)
+		dest.ParsedPayloadS = ToUUID32(payload)
 	case 0x06:
 		//Incomplete List of 128-bit Service Class UUIDs
-		dest.ParsedPayloadS = toUUID128(payload)
+		dest.ParsedPayloadS = ToUUID128(payload)
 	case 0x07:
 		//Complete List of 128-bit Service Class UUIDs
-		dest.ParsedPayloadS = toUUID128(payload)
+		dest.ParsedPayloadS = ToUUID128(payload)
 	case 0x08:
 		//Shortened Local Name
 		dest.ParsedPayloadS = string(*payload)
@@ -198,13 +217,13 @@ func doSvcAction(action int, payload *[]byte, dest *Svc) {
 		dest.ParsedPayloadS = fmt.Sprintf("%x", *payload) //FIXME: Needs attention
 	case 0x14:
 		//List of 16-bit Service Solicitation UUIDs
-		dest.ParsedPayloadS = toUUID16(payload)
+		dest.ParsedPayloadS = ToUUID16(payload)
 	case 0x1F:
 		//List of 32-bit Service Solicitation UUIDs
-		dest.ParsedPayloadS = toUUID32(payload)
+		dest.ParsedPayloadS = ToUUID32(payload)
 	case 0x15:
 		//List of 128-bit Service Solicitation UUIDs
-		dest.ParsedPayloadS = toUUID128(payload)
+		dest.ParsedPayloadS = ToUUID128(payload)
 	case 0x16:
 		//Service Data
 		// return fmt.Sprintf("%x", *payload)
@@ -242,10 +261,10 @@ func doSvcAction(action int, payload *[]byte, dest *Svc) {
 		dest.ParsedPayload = *payload
 	case 0x20:
 		//Service Data - 32-bit UUID
-		dest.ParsedPayloadS = toUUID32(payload)
+		dest.ParsedPayloadS = ToUUID32(payload)
 	case 0x21:
 		//Service Data - 128-bit UUID
-		dest.ParsedPayloadS = toUUID128(payload)
+		dest.ParsedPayloadS = ToUUID128(payload)
 	case 0x3D:
 		//3D Information Data
 		//return ""
@@ -259,18 +278,30 @@ func doSvcAction(action int, payload *[]byte, dest *Svc) {
 
 }
 
-func toUUID16(u *[]byte) string {
+func ToUUID16(u *[]byte) string {
 	//return "0000-" + string((*u)[1]+(*u)[0]) + BaseUUID
+	//FIXME: add length check
 	return fmt.Sprintf("0000-%x%x%s", (*u)[1], (*u)[0], BaseUUID)
 }
 
-func toUUID32(u *[]byte) string {
+func ToUUID32(u *[]byte) string {
 	//return string((*u)[1]+(*u)[0]) + "-" + string((*u)[4]+(*u)[3]) + BaseUUID
-	return fmt.Sprintf("%x%x-%x%x%s", (*u)[1], (*u)[0], (*u)[4], (*u)[3], BaseUUID)
+	//FIXME: add length check
+	return fmt.Sprintf("%x%x-%x%x%s", (*u)[1], (*u)[0], (*u)[3], (*u)[2], BaseUUID)
 }
 
-func toUUID128(u *[]byte) string {
+func ToUUID128(u *[]byte) string {
 
-	//return fmt.Sprintf("%s", GenericUUID128, (*u)[1], (*u)[0], (*u)[4], (*u)[3])
+	//FIXME: add length check
+	//return fmt.Sprintf(GenericUUID128, (*u)[1], (*u)[0], (*u)[4], (*u)[3])
 	return "TBC"
+}
+
+func ToUUID128iBeacon(u *[]byte) string {
+
+	//FIXME: add length check
+	return fmt.Sprintf(GenericUUID128, (*u)[0], (*u)[1], (*u)[2], (*u)[3],
+		(*u)[4], (*u)[5], (*u)[6], (*u)[7],
+		(*u)[8], (*u)[9], (*u)[10], (*u)[11],
+		(*u)[12], (*u)[13], (*u)[14], (*u)[15])
 }

@@ -54,7 +54,11 @@ func ParseMF(mmfData []byte) string {
 		// handoff
 		jApple = processHandoff(data)
 
-	//case "nearby_action":
+	case "iBeacon":
+		// nearby
+		jApple = processiBeacon(data)
+
+		//case "nearby_action":
 	// nearby_action
 	//jApple = processNearbyAction(data)
 

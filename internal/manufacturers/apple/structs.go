@@ -7,6 +7,14 @@ type UnknownPacket struct {
 	Data   []byte `json:"data"` // this gets Base64 encoded by Marshall
 }
 
+// iBeacon - packet
+type iBeacon struct {
+	UUID  string `json:"uuid"`
+	Name  string `json:"name"`
+	Major uint16 `json:"major"`
+	Minor uint16 `json:"minor"`
+}
+
 // Nearby - packet
 type Nearby struct {
 	State    string   `json:"state"`  // Note that Marshall only exports "exportable" names, that is not lowercase
