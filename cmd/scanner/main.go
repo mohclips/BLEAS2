@@ -22,7 +22,7 @@ import (
 	// My stuff
 	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 	apple "github.com/mohclips/BLEAS2/internal/manufacturers/apple"
-	microsoft "github.com/mohclips/BLEAS2/internal/manufacturers/apple"
+	microsoft "github.com/mohclips/BLEAS2/internal/manufacturers/microsoft"
 	"github.com/mohclips/BLEAS2/internal/manufacturers/nhs"
 	"github.com/mohclips/BLEAS2/internal/utils"
 
@@ -154,7 +154,9 @@ func advHandler(a ble.Advertisement) {
 
 	// parsed - data ready for elastic
 	var (
+		// service data
 		sParsed string
+		// manufacture data
 		mParsed string
 	)
 	// error
@@ -217,7 +219,7 @@ func advHandler(a ble.Advertisement) {
 
 	addressType := utils.BitmaskToNames(int(a.LEAdvertisingReportRaw()[3]), MACaddressTypes)
 
-	//
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Services data provided
 	//
 	var sID string
@@ -237,32 +239,47 @@ func advHandler(a ble.Advertisement) {
 
 	}
 
-	//
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Manufacturer data provided
 	//
+
+	// manufacturers ID
 	var mID uint16
+	// manufacturers Name
 	var mName string
 	if len(a.ManufacturerData()) > 0 {
 		mID = mf.GetID(a.ManufacturerData())
 		mName = mf.GetName(mID)
 
-		log.Info("Manufacturer: 0x%04x : \033[1;36m%s\033[0m", mID, mName)
+		log.Info("Manufacturer: 0x%04x : \"\033[1;36m%s\033[0m\"", mID, mName)
 		//
 		// do each known Manufacturer
 		//
-		parsedOk := false
+
+		// did we parse the data?
+		//parsedOk := false
 
 		// list known manufacturer parsers here
-		if mName == "Apple, Inc." {
-			mParsed = apple.ParseMF(a.ManufacturerData())
-			parsedOk = true
-		} else if mName == "Microsoft" {
-			mParsed = microsoft.ParseMF(a.ManufacturerData())
-			parsedOk = true
-		}
+		//if mName == "Apple, Inc." { // 4c
+		// if mID == 0x004c {
+		// 	mParsed = apple.ParseMF(a.ManufacturerData())
+		// 	parsedOk = true
+		// 	//} else if mName == "Microsoft" { // 06
+		// } else if mID == 0x0006 {
+		// 	mParsed = microsoft.ParseMF(a.ManufacturerData())
+		// 	parsedOk = true
+		// }
 
-		// if not parsed then Debug
-		if !parsedOk {
+		switch mID {
+		case 0x0006:
+			mParsed = microsoft.ParseMF(a.ManufacturerData())
+			//parsedOk = true
+		case 0x004c:
+			mParsed = apple.ParseMF(a.ManufacturerData())
+			//parsedOk = true
+		default:
+			// if not parsed then Debug
+			//if !parsedOk {
 			log.Debug("ManufacturerID: %s Manufacturer: %s ManufacturerData: %s",
 				fmt.Sprintf("0x%04x", mID),
 				mName,
@@ -274,6 +291,7 @@ func advHandler(a ble.Advertisement) {
 		}
 
 	}
+	////////////////////////////////////////////////////////////////////////////////////////////////
 
 	device := Device{
 		Timestamp: time.Now().Format(time.RFC3339),
@@ -317,17 +335,16 @@ func advHandler(a ble.Advertisement) {
 		// now replace the parsed data
 		rjson, _ = sjson.SetRaw(string(dpkt), "manufacturerdata.details", mParsed)
 	} else {
-		//rjson = string(dpkt)
 		log.Trace("no manufacturer details present")
 		rjson, _ = sjson.SetRaw(string(dpkt), "manufacturerdata.details", "{}")
 	}
 	// rjson at this point is now the Device struct converted into json with manufacturer details added
+	// thus we should not refer to the Device struct or dpkt anymore
 
 	if sName != "" && len(sParsed) > 0 {
 		// now replace the parsed data
 		rjson, _ = sjson.SetRaw(rjson, "servicedata.details", sParsed)
 	} else {
-		//rjson = string(dpkt)
 		log.Trace("no service details present")
 		rjson, _ = sjson.SetRaw(rjson, "servicedata.details", "{}")
 	}
