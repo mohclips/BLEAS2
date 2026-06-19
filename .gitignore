@@ -17,7 +17,9 @@ deploy/sudoers.bleas
 # DuckDB binary dropped by reporter/install.sh
 reporter/duckdb
 
-# Built scanner binary and stray npm artifacts (no package.json in this repo)
-scanner
+# Built scanner binary and stray npm artifacts (no package.json in this repo).
+# Anchored with a leading slash so it matches only the repo-root binary, NOT
+# the cmd/scanner/ source directory.
+/scanner
 node_modules/
 package-lock.json
