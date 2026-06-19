@@ -2,11 +2,8 @@ package microsoft
 
 import (
 	"encoding/hex"
-	"encoding/json"
 
-	//"log"
-	log "github.com/mohclips/BLEAS2/internal/logging"
-
+	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 	"github.com/mohclips/BLEAS2/internal/utils"
 )
 
@@ -62,9 +59,9 @@ func ParseMF(mmfData []byte) string {
 		deviceName = "Unknown"
 	}
 
-	versionFlags := mfData[2]              // The high 3 bits are set to 001; the lower 3 bits to 00000.
-	vfVersion := versionFlags & 0b11100000 // always 32 ?
-	vfFlags := (versionFlags & 0b00011111) >> 5
+	versionFlags := mfData[2]                     // The high 3 bits are version (001); the lower 5 bits are flags.
+	vfVersion := (versionFlags & 0b11100000) >> 5 // expect 1
+	vfFlags := versionFlags & 0b00011111
 	flags := utils.BitmaskToNames(int(vfFlags), bleFlags)
 
 	reserved := mfData[3] // should be zero - but isnt
@@ -105,16 +102,5 @@ func ParseMF(mmfData []byte) string {
 		Sha256: sha256,
 	}
 
-	// convert to json
-	var mpkt []byte
-	var err error
-	mpkt, err = json.Marshal(pkt)
-	if err != nil {
-		log.Error("%s", err)
-		mpkt = nil
-	}
-
-	ret := "{\"microsoft\":" + string(mpkt) + "}"
-
-	return ret
+	return `{"microsoft":` + string(mf.MarshalOrEmpty(pkt)) + `}`
 }

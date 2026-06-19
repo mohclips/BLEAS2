@@ -1,12 +1,9 @@
 package apple
 
 import (
-	"encoding/json"
 	"fmt"
 
-	//"log"
-
-	log "github.com/mohclips/BLEAS2/internal/logging"
+	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 	"github.com/mohclips/BLEAS2/internal/utils"
 )
 
@@ -81,15 +78,5 @@ func processNearby(data []byte) []byte {
 		},
 	}
 
-	var mpkt []byte
-	var err error
-	mpkt, err = json.Marshal(pkt)
-	if err != nil {
-		log.Error("%s", err)
-		mpkt = nil
-	}
-
-	//	fmt.Printf("mpkt %s\n", mpkt)
-
-	return mpkt
+	return mf.MarshalOrEmpty(pkt)
 }

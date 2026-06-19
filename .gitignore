@@ -9,3 +9,15 @@ linecounter.json
 linecounter.txt
 cmd/scanner/config.yml
 sudo_pwd
+
+# Runtime data and personal exclusion list — never check these in.
+captures/
+deploy/sudoers.bleas
+
+# DuckDB binary dropped by reporter/install.sh
+reporter/duckdb
+
+# Built scanner binary and stray npm artifacts (no package.json in this repo)
+scanner
+node_modules/
+package-lock.json

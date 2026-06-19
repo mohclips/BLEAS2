@@ -85,6 +85,7 @@ var blePacketsTypes = map[int]string{
 	0x0e: "hotspot",        // https://github.com/furiousMAC/continuity/blob/master/messages/tethering_source.md
 	0x0f: "nearby_action",  // https://github.com/furiousMAC/continuity/blob/master/messages/nearby_action.md
 	0x10: "nearby",         // https://github.com/furiousMAC/continuity/blob/master/messages/nearby_info.md
+	0x12: "findmy",         // https://github.com/furiousMAC/continuity/blob/master/messages/findmy.md
 }
 
 // https://github.com/hexway/apple_bleee/blob/1f8022959be660b561e6004b808dd93fa252bc90/ble_read_state.py//L107

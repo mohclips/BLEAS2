@@ -2,12 +2,10 @@ package nhs
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 
-	//"log"
 	log "github.com/mohclips/BLEAS2/internal/logging"
-
+	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 	"github.com/mohclips/BLEAS2/internal/utils"
 )
 
@@ -26,34 +24,23 @@ func Parse(rawData []byte) string {
 	// type 0x16 - Service Data
 	// payload ...
 
-	// 00 — Event type, Connectable and scannable undirected advertising (ADV_IND)
-	//eventType := rawData[2]
 	svcData := rawData[10:]
-	length := svcData[0] // length of all services
-	payload := svcData[0:length]
-	payloadExtra := svcData[length:] // what is this?
-
-	// log.Debug("rawRAW: %x", rawData)
-	// log.Debug("RAW: %s", utils.FormatHexComma(hex.EncodeToString(rawData)))
-	// log.Debug("subevent:%d reports:%d", rawData[0], rawData[1])
-	// log.Debug("eventType: %d", eventType)
-	// log.Debug("addressType: %d", rawData[3])
-	// log.Debug("SVC: %s", utils.FormatHexComma(hex.EncodeToString(svcData)))
-	// log.Debug("payload: %s", utils.FormatHexComma(hex.EncodeToString(payload)))
-	// log.Debug("all svc len: %x %d", length, length)
-
-	// .. more bytes in pkt?, then get length,get type, parse...
-	log.Debug("extra: %s", utils.FormatHexComma(hex.EncodeToString(payloadExtra))) // what is this?
-	//log.Debug("extra signed int: %d", int(extra[0]))
-
-	if len(payload) != int(length) {
-		log.Error("wrong payload length: payload: %d  length:%d", len(payload), int(length))
+	if len(svcData) < 1 {
+		log.Error("svc data missing length byte")
+		return "{}"
 	}
+	length := int(svcData[0]) // number of AD-entry bytes following the length byte
+	if 1+length > len(svcData) {
+		log.Error("svc data truncated: length=%d buf=%d", length, len(svcData))
+		return "{}"
+	}
+	payload := svcData[1 : 1+length]
+	payloadExtra := svcData[1+length:]
+
+	log.Debug("extra: %s", utils.FormatHexComma(hex.EncodeToString(payloadExtra)))
 
 	// svcsList - List of services contained in this BLE packet
-	var svcsList []utils.Svc
-
-	utils.WalkSvcs(&payload, &svcsList)
+	svcsList := utils.WalkSvcs(payload)
 
 	log.Trace("NHS SvcsList: %+v", svcsList)
 
@@ -101,16 +88,5 @@ func Parse(rawData []byte) string {
 		PayloadExtra: fmt.Sprintf("%x", payloadExtra),
 	}
 
-	// convert to json
-	var mpkt []byte
-	var err error
-	mpkt, err = json.Marshal(pkt)
-	if err != nil {
-		log.Error("%s", err)
-		mpkt = nil
-	}
-
-	ret := "{\"nhs\":" + string(mpkt) + "}"
-
-	return ret // some json
+	return `{"nhs":` + string(mf.MarshalOrEmpty(pkt)) + `}`
 }

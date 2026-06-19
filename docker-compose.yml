@@ -1,0 +1,21 @@
+services:
+  bleas:
+    build: .
+    image: bleas:latest
+    container_name: bleas
+    restart: unless-stopped
+    # BLE scanning needs direct access to the host HCI device and the
+    # /sys path the app writes to in CheckBtUsbPower(). Privileged +
+    # host networking is the simplest combination that works on most
+    # Linux hosts.
+    privileged: true
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./cmd/scanner/config.yml:/app/config.yml:ro
+      - ./captures:/app/captures
+      - /sys/class/bluetooth:/sys/class/bluetooth
+      - /sys/devices:/sys/devices
+      - /var/run/dbus:/var/run/dbus

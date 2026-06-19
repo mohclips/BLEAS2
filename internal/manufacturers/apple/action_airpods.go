@@ -2,11 +2,9 @@ package apple
 
 import (
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 
-	//log"
-	log "github.com/mohclips/BLEAS2/internal/logging"
+	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 )
 
 //     # https://github.com/furiousMAC/continuity/blob/master/messages/proximity_pairing.md
@@ -68,14 +66,5 @@ func processAirpods(data []byte) []byte {
 		},
 	}
 
-	// convert to json
-	var mpkt []byte
-	var err error
-	mpkt, err = json.Marshal(pkt)
-	if err != nil {
-		log.Error("%s", err)
-		mpkt = nil
-	}
-
-	return mpkt
+	return mf.MarshalOrEmpty(pkt)
 }

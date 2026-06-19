@@ -1,0 +1,31 @@
+# Example sudoers drop-in for BLEAS2.
+#
+# Copy to /etc/sudoers.d/bleas and edit BEFORE installing. Replace "nick"
+# with the username that will run the scanner. The two paths below are
+# the two install styles BLEAS2 supports — keep whichever fits, delete
+# the other.
+#
+# Install:
+#   sudo install -m 0440 -o root -g root deploy/sudoers.bleas.example /etc/sudoers.d/bleas
+#   sudo visudo -c            # validates all sudoers files
+#
+# After editing /etc/sudoers.d/bleas, always re-run `sudo visudo -c` to
+# catch syntax errors — a broken sudoers file can lock you out.
+
+# Allow user 'nick' to bring hci0 down without a password. Required because
+# the BLE library needs an exclusive HCI user channel and bluetoothd
+# normally holds hci0 in UP state.
+nick ALL=(root) NOPASSWD: /usr/bin/hciconfig hci0 down
+
+# --- Dev path ---
+# Build straight to /tmp/scanner-patched and run from there. Wildcard on
+# args so you can iterate flags freely without re-editing sudoers each
+# build. /tmp is multi-user-writable so don't use this style on a shared
+# host.
+nick ALL=(root) NOPASSWD: /tmp/scanner-patched *
+
+# --- Production path ---
+# Install the binary at /usr/local/bin and config at /etc/bleas. Pin both
+# so /tmp can't be used as an escalation vector. Uncomment if you do a
+# proper install.
+#nick ALL=(root) NOPASSWD: /usr/local/bin/bleas-scanner -configPath /etc/bleas/config.yml

@@ -2,18 +2,13 @@ package apple
 
 import (
 	"encoding/binary"
-	"encoding/json"
 
-	//"log"
-	log "github.com/mohclips/BLEAS2/internal/logging"
+	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 )
 
 func processHandoff(data []byte) []byte {
 
-	clipboardStatus := false
-	if data[0] != 1 {
-		clipboardStatus = true
-	}
+	clipboardStatus := data[0] == 1
 
 	seqNum := binary.BigEndian.Uint16(data[1:3])
 	gcmAuth := int(data[3])
@@ -32,13 +27,5 @@ func processHandoff(data []byte) []byte {
 		},
 	}
 
-	var mpkt []byte
-	var err error
-	mpkt, err = json.Marshal(pkt)
-	if err != nil {
-		log.Error("%s", err)
-		mpkt = nil
-	}
-
-	return mpkt
+	return mf.MarshalOrEmpty(pkt)
 }

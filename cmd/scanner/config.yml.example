@@ -1,25 +1,94 @@
-# default BLE device
-device: default
-# duration of scan
+# Example BLEAS2 scanner configuration.
+#
+# Copy this to cmd/scanner/config.yml and edit. The real config.yml is
+# gitignored so your household MAC addresses don't end up in source control.
+
+# default BLE device — usually hci0
+device: hci0
+
+# duration of one scan window before restart
 duration: 5s
-# allow recording fof duplicate events
+
+# pass duplicate ad events through the BLE layer (dedup below collapses them)
 allow_duplicates: yes
-# allow ID152 events
+
+# drop the chatty "ID152" device unless yes
 allow_id152: no
-# allow NHS Covid19 app events
+
+# drop NHS Covid-19 / Google Exposure Notification packets unless yes
 allow_nhs: no
-# record (stdout) no events seen in scan duration
+
+# log a notice when a scan window saw no advertisements
 log_blanks: no
-# debug level = info, warn, error, debug, trace, panic, fatal
-log_level: trace
+
+# info | warn | error | debug | trace | panic | fatal
+# trace dumps raw bytes per packet — useful while debugging parsers, noisy otherwise
+log_level: info
 
 
-elastic:
-# elastic stack destination urls
-  servers:
-    - http://192.168.0.12:9200
+# JSON-Lines capture sink. Reporting tools (./reporter/run.sh) consume these
+# files separately. Files are timestamped per open so distinct runs never
+# overwrite each other.
+output:
+  jsonl:
+    enabled: yes
+    dir: ./captures
+    rotation: daily        # daily | size | none
+    max_size_mb: 100       # only used when rotation = size
+    compress_after: 7      # gzip files older than N days; 0 = off
 
-  api_key_id:
-  api_key_secret:
 
-  index: bluetooth-alias
+# Audit-mode dedup: collapse identical packets (same addr + manufacturer +
+# advertising bytes) within a rolling window. Larger window = "first sighting
+# per device per window" semantics. Set window to 0s or enabled: no to
+# record every packet.
+dedup:
+  enabled: yes
+  window: 5m
+
+
+# Exclude your own household devices so the capture reflects external /
+# passing broadcasters only. Workflow to populate:
+#   1. Let the scanner run for a while with `enabled: no`.
+#   2. Run `./reporter/run.sh 09` to see the always-present MACs.
+#   3. Run `./reporter/run.sh 25` for local names of long-lived devices.
+#   4. Run `./reporter/run.sh 31` for identity fingerprints (Apple devices).
+#   5. Add the ones you recognise as your own; flip enabled: yes.
+#
+# Two layers:
+#   MAC/name rules apply up front (fast path).
+#   Identity-fingerprint rules apply AFTER manufacturer-data parsing and
+#   catch devices that rotate their BLE MAC (Apple devices in particular).
+exclude:
+  enabled: no
+  addresses: []
+    # - "aa:bb:cc:dd:ee:ff"   # my Garmin watch
+    # - "d9:00:00:11:22:33"   # my Chipolo (note the d9:00:00 prefix all Chipolos share)
+  address_prefixes: []
+    # - "00:e0:4c"             # all devices from this OUI
+    # - "d9:00:00"             # ALL Chipolos (uncomment to drop strangers' too)
+  local_names: []
+    # - "MyWatch"
+
+  # Identity-fingerprint exclusion — catches Apple devices that rotate
+  # their BLE MAC every ~15 min. Run `./reporter/run.sh 31` against a
+  # day's worth of capture; high-persistence rows are almost certainly
+  # your own devices.
+  airdrop_hashes: []
+    # - "6e2e:f7ad:09b2:2080"   # my Apple ID (4 hash prefixes from airdrop subtype)
+  icloud_ids: []
+    # - "abcd1234"               # rotates daily — refresh from query 31 each day
+  homekit_device_ids: []
+    # - "112233445566"           # never rotates
+  findmy_public_keys: []
+    # - "AABBCCDD..."            # AirTag in separated mode; rotates daily
+
+
+# Optional Elasticsearch destination. Leave commented out unless you want
+# to ship records to an ES cluster in addition to the JSONL sink.
+#elastic:
+#  servers:
+#    - http://192.168.0.12:9200
+#  api_key_id:
+#  api_key_secret:
+#  index: bluetooth-alias

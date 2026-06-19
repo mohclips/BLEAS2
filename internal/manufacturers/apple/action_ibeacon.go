@@ -2,10 +2,8 @@ package apple
 
 import (
 	"encoding/binary"
-	"encoding/json"
 
-	//"log"
-	log "github.com/mohclips/BLEAS2/internal/logging"
+	mf "github.com/mohclips/BLEAS2/internal/manufacturers"
 	"github.com/mohclips/BLEAS2/internal/utils"
 )
 
@@ -27,8 +25,7 @@ func processiBeacon(data []byte) []byte {
 	// 0:15 uuid
 	// 16:17 major
 	// 18:19 minor
-	uuid := data[0:16]
-	proximityUUID := utils.ToUUID128iBeacon(&uuid)
+	proximityUUID := utils.ToUUID128iBeacon(data[0:16])
 
 	name := utils.LookupiBeaconVendor(proximityUUID)
 
@@ -48,13 +45,5 @@ func processiBeacon(data []byte) []byte {
 		},
 	}
 
-	var mpkt []byte
-	var err error
-	mpkt, err = json.Marshal(pkt)
-	if err != nil {
-		log.Error("%s", err)
-		mpkt = nil
-	}
-
-	return mpkt
+	return mf.MarshalOrEmpty(pkt)
 }

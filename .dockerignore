@@ -1,0 +1,16 @@
+.git
+.gitignore
+.pre-commit-config.yaml
+README.md
+main
+*.log
+old/
+.old/
+.secrets.baseline
+export.sh
+linecounter.json
+linecounter.txt
+sudo_pwd
+Dockerfile
+docker-compose.yml
+.dockerignore
