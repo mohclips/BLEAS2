@@ -187,21 +187,15 @@ func advHandler(a ble.Advertisement) {
 		}
 	}
 
-	// do not display NHS app
-	if !cfg.AllowNHS {
-		for _, s := range a.Services() {
-			if s.String() == "fd6f" {
-				return
-			}
-		}
-	}
-
-	// Cheap dedup short-circuit. Build the dedup key from raw bytes (cheap)
-	// BEFORE the expensive parse/marshal below. If an identical packet (same
-	// addr + manufacturer + advertising bytes) has already been seen this
-	// window, just record the new RSSI sample and bail — the bucket already
-	// passed every exclusion check on its first sighting, and re-parsing it
-	// only to discard the result is what pegs the CPU at busy locations.
+	// Cheap dedup short-circuit FIRST — before anything that parses the
+	// advertising payload. Build the dedup key from raw bytes (cheap). If an
+	// identical packet (same addr + manufacturer + advertising bytes) was
+	// already seen this window, record the new RSSI sample and bail. The bucket
+	// already passed every exclusion check on its first sighting, so a duplicate
+	// never needs to touch the AD parser again. This ordering matters: a.Services()
+	// (the NHS check below, and the emit path) walks the AD structure on every
+	// call, so keeping it off the hot duplicate path is most of the CPU win at
+	// busy locations.
 	//
 	// The HCI LE Advertising Report has a trailing RSSI byte that DOES change
 	// per packet — strip it so identical payloads collapse to one bucket.
@@ -216,6 +210,17 @@ func advHandler(a ble.Advertisement) {
 
 	if agg.ObserveExisting(key, rssi) {
 		return
+	}
+
+	// do not display NHS app. NB: the COVID-19 Exposure Notification service
+	// (fd6f) has been effectively dead since ~2022, so this rarely matches now;
+	// kept (config-gated) because a.Services() runs for the emit path anyway.
+	if !cfg.AllowNHS {
+		for _, s := range a.Services() {
+			if s.String() == "fd6f" {
+				return
+			}
+		}
 	}
 
 	// Per-packet trace — the JSONL sink is the source of truth, this is only

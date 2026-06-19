@@ -189,8 +189,17 @@ func (p *Packet) getUUIDsByType(typ byte, u []ble.UUID, w int) []ble.UUID {
 	pos := 0
 	var b []byte
 	for pos < len(p.b) {
+		prev := pos
 		if b, pos = p.fieldPos(typ, pos); b != nil {
 			u = uuidList(u, b, w)
+		}
+		// fieldPos returns the SAME pos when it hits a malformed AD field
+		// (zero length byte, or a length that overruns the buffer). Without
+		// this guard the loop re-parses the same byte forever, pinning a CPU
+		// core per malformed advertisement — and devices in the wild do emit
+		// malformed adverts. Stop scanning once we can't make progress.
+		if pos <= prev {
+			break
 		}
 	}
 	return u
