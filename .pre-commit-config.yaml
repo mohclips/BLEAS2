@@ -17,7 +17,16 @@ repos:
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
-        exclude: package.lock.json
+        # Skip vendored upstream code and gitignored artifacts. third_party/
+        # is the vendored sausheong/ble library (not our code, and it hangs
+        # the scanner); node_modules/ and captures/ are build/runtime junk.
+        exclude: |
+          (?x)^(
+            package\.lock\.json|
+            third_party/|
+            node_modules/|
+            captures/
+          )
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.1.0
